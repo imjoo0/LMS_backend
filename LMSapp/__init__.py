@@ -71,7 +71,7 @@ def create_app():
     # file_upload.init_app(app, db)
 
     # 스케줄러 설정
-    scheduler.start()
+    # scheduler.start()
 
     # bp
     from .views import main_views

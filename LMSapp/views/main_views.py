@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, request, url_for, session
+from flask_wtf.csrf import generate_csrf
 import jwt
 import hashlib
 import config
@@ -7,9 +8,17 @@ from LMSapp import get_db
 bp = Blueprint('main', __name__, url_prefix='/')
 SECRET_KEY = config.SECRET_KEY
 
+@bp.route('/get_csrf_token', methods=['GET'])
+def get_csrf_token():
+    return jsonify(csrf_token=generate_csrf())
+
 @bp.route('/login', methods=['POST'])
-def sign_in():
+def login():
+    # 클라이언트에서 보낸 X-CSRFToken 헤더 값을 출력
+    csrf_token_from_client = request.headers.get('X-CSRFToken')
+    print("Received CSRF Token:", csrf_token_from_client)
     data = request.get_json()
+    print(data)
     user_id = data.get('user_id')
     user_pw = data.get('user_pw')
     hashed_pw = hashlib.sha256(user_pw.encode('utf-8')).hexdigest()
@@ -42,7 +51,7 @@ def sign_in():
         return jsonify({'result':'fail', 'msg': 'id, pw 를 확인해주세요'})
 
 # 로그아웃 API
-@bp.route("/logout", methods=['GET'])
+@bp.route("logout", methods=['GET'])
 def logout():
     # 세션에서 사용자 정보 삭제
     session.pop('user_id', None)
