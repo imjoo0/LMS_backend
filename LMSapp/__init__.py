@@ -1,10 +1,11 @@
-from flask import Flask, g 
+from flask import Flask, g
+from flask_cors import CORS
+from flask_wtf.csrf import CSRFProtect  # csrf
 
 # 파일 업로드
 from flask_file_upload.file_upload import FileUpload
 import config
 import pymysql
-from flask_wtf.csrf import CSRFProtect  # csrf
 
 file_upload = FileUpload()
 app = Flask(__name__)
@@ -56,18 +57,21 @@ def update_database():
         cursor.close()
 
 def create_app():
-    app = Flask(__name__)
+    app = Flask(__name__, static_folder='../frontend/LMS_front/build/static')
     app.config.from_object(config) # config.py 파일에 작성한 항목을 읽기 위해
-
-    # CSRF 설정
-    csrf = CSRFProtect()
-    csrf.init_app(app)
 
     # 파일 업로드 설정
     # file_upload.init_app(app, db)
 
     # 스케줄러 설정
     # scheduler.start()
+
+
+    # CSRF 설정
+    csrf = CSRFProtect()
+    csrf.init_app(app)
+    # CORS 설정
+    CORS(app, resources={r"/*": {"origins": config.FRONT}}, supports_credentials=True, expose_headers=["Content-Type", "X-CSRFToken"])
 
     # bp
     from .views import main_views
@@ -86,3 +90,4 @@ def create_app():
     # app.register_blueprint(common.bp)
 
     return app
+

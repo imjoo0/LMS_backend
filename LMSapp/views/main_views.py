@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request, url_for, session
+from flask import Blueprint, jsonify, request, url_for, session, send_from_directory 
 from flask_wtf.csrf import generate_csrf
 from LMSapp import get_db
 
@@ -9,10 +9,9 @@ import config
 bp = Blueprint('main', __name__, url_prefix='/')
 SECRET_KEY = config.SECRET_KEY
 
-@bp.app_errorhandler(400)
-def handle_bad_request(e):
-    print(e)
-    return jsonify({'result':'fail', 'msg': e}), 400
+@bp.route('/')
+def serve():
+    return send_from_directory('../frontend/LMS_front/build', 'index.html')
 
 @bp.route('/get_csrf_token', methods=['GET'])
 def get_csrf_token():
