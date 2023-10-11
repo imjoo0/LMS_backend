@@ -1,22 +1,36 @@
 from flask import Blueprint, jsonify, request, url_for, session
 from flask_wtf.csrf import generate_csrf
+from LMSapp import get_db
+
 import jwt
 import hashlib
 import config
-from LMSapp import get_db
 
 bp = Blueprint('main', __name__, url_prefix='/')
 SECRET_KEY = config.SECRET_KEY
 
+@bp.app_errorhandler(400)
+def handle_bad_request(e):
+    print(e)
+    return jsonify({'result':'fail', 'msg': e}), 400
+
 @bp.route('/get_csrf_token', methods=['GET'])
 def get_csrf_token():
-    return jsonify(csrf_token=generate_csrf())
+    session['csrf_token'] = generate_csrf()  # 세션에 CSRF 토큰 저장
+    print("Received CSRF Token:", session['csrf_token'])
+    return jsonify(csrf_token=session['csrf_token'])
 
 @bp.route('/login', methods=['POST'])
 def login():
-    # 클라이언트에서 보낸 X-CSRFToken 헤더 값을 출력
+    print('here')
+    import pdb ; pdb.set_trace()
     csrf_token_from_client = request.headers.get('X-CSRFToken')
-    print("Received CSRF Token:", csrf_token_from_client)
+    server_csrf_token = session.get('csrf_token')
+    if csrf_token_from_client != server_csrf_token:
+        print(f"Client CSRF Token: {csrf_token_from_client}")
+        print(f"Server CSRF Token: {server_csrf_token}")
+        return jsonify({'result':'fail', 'msg': 'Invalid CSRF token'}), 400
+    print('here')
     data = request.get_json()
     print(data)
     user_id = data.get('user_id')

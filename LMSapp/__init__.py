@@ -5,10 +5,8 @@ from flask_file_upload.file_upload import FileUpload
 import config
 import pymysql
 from flask_wtf.csrf import CSRFProtect  # csrf
-from flask_cors import CORS  # CORS 추가
 
 file_upload = FileUpload()
-csrf = CSRFProtect()
 app = Flask(__name__)
 
 from flask_socketio import SocketIO
@@ -60,11 +58,9 @@ def update_database():
 def create_app():
     app = Flask(__name__)
     app.config.from_object(config) # config.py 파일에 작성한 항목을 읽기 위해
-    
-    # CORS 설정
-    cors = CORS(app, resources={r"/*": {"origins": config.FRONT}})
 
     # CSRF 설정
+    csrf = CSRFProtect()
     csrf.init_app(app)
 
     # 파일 업로드 설정
